@@ -9,9 +9,4 @@ class RepositoryFiles(RepositoryDBFiles[FileModel, FileCreate]):
     pass
 
 
-#class RepositoryUsers(RepositoryDBUsers[UserModel, UserRegister]):
-#    pass
-
-
 file_crud = RepositoryFiles(FileModel)
-#user_crud = RepositoryUsers(UserModel)

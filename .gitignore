@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 venv/
 src/.env
+src/tasks.log
+src/files
+dockerization/
+services/

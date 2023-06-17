@@ -12,8 +12,10 @@ class UserRead(schemas.BaseUser[uuid.UUID]):
 class UserCreate(schemas.BaseUserCreate):
     pass
 
+
 class FileCreate(BaseModel):
     path: str
+
 
 class FileRead(BaseModel):
     id: UUID4
@@ -27,14 +29,8 @@ class FileRead(BaseModel):
         orm_mode = True
 
 
-
-# class UserRegister(BaseModel):
-#    login: str
-#    password: str
-
-
 class FileReadList(FileRead):
-    author: UUID4|None
+    author: UUID4
 
     class Config:
         orm_mode = True

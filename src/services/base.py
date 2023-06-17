@@ -1,19 +1,14 @@
 import datetime
-import secrets
-import string
-import sys
-from typing import Annotated, Generic, List, Optional, Type, TypeVar
+from typing import Generic, Optional, Type, TypeVar
 
 import asyncpg
-from fastapi import Depends, HTTPException, UploadFile, status
 from fastapi.encoders import jsonable_encoder
-from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from sqlalchemy import exc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import text
 
-from core.config import app_settings
+from core.logger import my_logger as logger
 from db.db import Base
 from models.db_models import FileModel
 
@@ -34,8 +29,7 @@ class Repository:
         raise NotImplementedError
 
 
-class RepositoryDBFiles(
-    Repository, Generic[ModelType, CreateSchemaType]):
+class RepositoryDBFiles(Repository, Generic[ModelType, CreateSchemaType]):
     """CRUD class for File model."""
 
     def __init__(self, model: Type[ModelType]):
@@ -57,31 +51,36 @@ class RepositoryDBFiles(
             obj_in: CreateSchemaType
     ) -> ModelType:
         """Upload a file."""
-        obj_in_data = jsonable_encoder(obj_in)
-        db_obj = FileModel(**obj_in_data)
-        db.add(db_obj)
-        await db.commit()
-        await db.refresh(db_obj)
+        try:
+            obj_in_data = jsonable_encoder(obj_in)
+            db_obj = FileModel(**obj_in_data)
+            db.add(db_obj)
+            await db.commit()
+            await db.refresh(db_obj)
+        except ValueError as err:
+            logger.exception(
+                f'File is not upload. Error - {err}')
         return db_obj
 
     async def get(
-                self,
-                db: AsyncSession,
-                path: str,
-                id: str 
-                # path & id query param
+            self,
+            db: AsyncSession,
+            path: str,
+            id: str
     ) -> ModelType:
         """Download a file."""
-        print(path, id)
-        if id:
-            statement = select(self._model).where(self._model.id == id)
-        else:
-            statement = select(self._model).where(self._model.path == path)
-        results = await db.execute(statement=statement)
+        try:
+            if id:
+                statement = select(self._model).where(self._model.id == id)
+            else:
+                statement = select(self._model).where(self._model.path == path)
+            results = await db.execute(statement=statement)
+        except ValueError as err:
+            logger.exception(
+                f'File is not found. Error - {err}')
         return results.scalar_one_or_none()
 
-    async def ping_db(self,
-            db: AsyncSession):
+    async def ping_db(self, db: AsyncSession):
         """Return ping db time."""
         statement = text('SELECT version();')
         start = datetime.datetime.now()
