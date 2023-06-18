@@ -13,9 +13,9 @@ class FileModel(Base):
     __tablename__ = 'files'
 
     id = Column(UUIDType(binary=False), primary_key=True, default=uuid4)
-    name = Column(String)
+    name = Column(String(100))
     size = Column(Integer, default=0)
-    path = Column(String, unique=True)
+    path = Column(String(250), unique=True)
     is_downloadable = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     author = Column(UUIDType(binary=False), default=uuid4)

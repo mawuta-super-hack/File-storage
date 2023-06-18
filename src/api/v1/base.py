@@ -1,6 +1,6 @@
 import sys
 import uuid
-from typing import Any, Optional
+from typing import Any
 
 import aiofiles
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
@@ -39,10 +39,13 @@ async def read_status(db: AsyncSession = Depends(get_session)) -> dict:
 async def read_files(
     *,
     db: AsyncSession = Depends(get_session),
-    user: User = Depends(current_active_user)
+    user: User = Depends(current_active_user),
+    max_result: int | None = None,
+    offset: int | None = None
 ) -> Any:
     logger.info('Get all files.')
-    db_obj = await file_crud.get_multi(db=db)
+    db_obj = await file_crud.get_multi(
+        db=db, max_result=max_result, offset=offset)
     return db_obj
 
 
@@ -91,8 +94,8 @@ async def delete_url(
     *,
     db: AsyncSession = Depends(get_session),
     user: User = Depends(current_active_user),
-    path: Optional[str] = None,
-    file_id: Optional[str] = None
+    path: str | None = None,
+    file_id: str | None = None
 ) -> Any:
     logger.info('Get file object in db.')
     file = await file_crud.get(db=db, id=file_id, path=path)

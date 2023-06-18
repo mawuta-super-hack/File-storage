@@ -1,18 +1,14 @@
-import os
-
-from dotenv import load_dotenv
 from fastapi import Depends
 from fastapi_users.db import (SQLAlchemyBaseUserTableUUID,
                               SQLAlchemyUserDatabase)
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-load_dotenv('.env')
-
+from core.config import app_settings
 
 Base = declarative_base()
 engine = create_async_engine(
-    os.environ['DATABASE_DSN'], echo=True, future=True)
+    app_settings.database_dsn, echo=True, future=True)
 async_session = sessionmaker(
     engine, class_=AsyncSession, expire_on_commit=False
 )

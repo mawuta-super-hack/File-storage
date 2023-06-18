@@ -2,6 +2,7 @@ import datetime
 from typing import Generic, Optional, Type, TypeVar
 
 import asyncpg
+from abc import ABC, abstractmethod
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy import exc, select
@@ -16,15 +17,18 @@ ModelType = TypeVar('ModelType', bound=Base)
 CreateSchemaType = TypeVar('CreateSchemaType', bound=BaseModel)
 
 
-class Repository:
-    """Basic crud class."""
+class Repository(ABC):
+    """Base crud class."""
 
+    @abstractmethod
     def get_multi(self, *args, **kwargs):
         raise NotImplementedError
 
+    @abstractmethod
     def get(self, *args, **kwargs):
         raise NotImplementedError
 
+    @abstractmethod
     def create(self, *args, **kwargs):
         raise NotImplementedError
 
@@ -38,9 +42,12 @@ class RepositoryDBFiles(Repository, Generic[ModelType, CreateSchemaType]):
     async def get_multi(
             self,
             db: AsyncSession,
+            max_result: int = 100,
+            offset: int = 0
     ) -> Optional[ModelType]:
         """Get all files."""
-        statement = select(self._model)
+        statement = select(self._model).offset(
+            offset).limit(max_result)
         results = await db.execute(statement=statement)
         return results.scalars().all()
 
